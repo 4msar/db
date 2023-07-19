@@ -526,6 +526,17 @@ p#dbs {padding-left: 21px;}
     overflow-y: auto !important;
 }
 
+#menu #tables li {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    flex-direction: row-reverse;
+}
+
+#menu #tables li a.structure {
+    width: 100%;
+}
+
 a,input,button{transition:all .168s;}
 .pages {
     left: 290px;
