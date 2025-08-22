@@ -486,7 +486,7 @@ p#dbs {padding-left: 21px;}
     border: none;
     color: #fff;
     border-radius: 4px;
-    width: 227px;
+    width: auto;
     position: absolute;
     left: 21px;
     height: 23px;
@@ -781,3 +781,14 @@ h2, h3 {
     background: #2196f3;
 }
 .footer > div{padding-left:10px;}
+
+select.jush-autocomplete {
+    width: 120px;
+    height: 80px;
+}
+.logout {
+    background-color: transparent;
+    box-shadow: none;
+    color: #fff;
+    text-transform: capitalize;
+}
