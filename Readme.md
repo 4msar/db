@@ -16,6 +16,22 @@ php -S localhost:1000
 
 Just browse to `localhost:1000` and you will see the adminer login page
 
+
+## Docker image
+
+```
+adminer:
+  image: 'adminer:latest'
+  ports:
+      - '${FORWARD_ADMINER_PORT:-8065}:8080'
+  environment:
+      ADMINER_DESIGN: pepa-linha
+      ADMINER_PLUGINS: 'tables-filter'
+  depends_on:
+      - mysql
+```
+
 ## Screenshots
 
 ![Screenshot](./screenshot.png)
+
