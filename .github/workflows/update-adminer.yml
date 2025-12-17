@@ -1,0 +1,66 @@
+name: Update Adminer
+
+on:
+    schedule:
+        # Run weekly on Mondays at 9:00 AM UTC
+        - cron: "0 9 * * 1"
+    workflow_dispatch: # Allows manual trigger
+
+jobs:
+    update-adminer:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Get latest Adminer release
+              id: get_release
+              run: |
+                  # Fetch the latest release info from GitHub API
+                  LATEST_RELEASE=$(curl -s https://api.github.com/repos/vrana/adminer/releases/latest)
+                  LATEST_VERSION=$(echo "$LATEST_RELEASE" | jq -r '.tag_name' | sed 's/^v//')
+                  DOWNLOAD_URL="https://github.com/vrana/adminer/releases/download/v${LATEST_VERSION}/adminer-${LATEST_VERSION}.php"
+
+                  echo "version=${LATEST_VERSION}" >> $GITHUB_OUTPUT
+                  echo "download_url=${DOWNLOAD_URL}" >> $GITHUB_OUTPUT
+                  echo "Latest Adminer version: ${LATEST_VERSION}"
+
+            - name: Download latest Adminer
+              run: |
+                  curl -L -o adminer.php "${{ steps.get_release.outputs.download_url }}"
+                  echo "Downloaded Adminer ${{ steps.get_release.outputs.version }}"
+
+            - name: Check for changes
+              id: check_changes
+              run: |
+                  if git diff --quiet adminer.php; then
+                    echo "No changes detected"
+                    echo "has_changes=false" >> $GITHUB_OUTPUT
+                  else
+                    echo "Changes detected"
+                    echo "has_changes=true" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Commit and push changes
+              if: steps.check_changes.outputs.has_changes == 'true'
+              run: |
+                  git config --local user.email "github-actions[bot]@users.noreply.github.com"
+                  git config --local user.name "github-actions[bot]"
+                  git add adminer.php
+                  git commit -m "Update Adminer to version ${{ steps.get_release.outputs.version }}"
+                  git push
+
+            - name: Create summary
+              run: |
+                  echo "### Adminer Update Summary" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Version:** ${{ steps.get_release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Download URL:** ${{ steps.get_release.outputs.download_url }}" >> $GITHUB_STEP_SUMMARY
+                  if [ "${{ steps.check_changes.outputs.has_changes }}" == "true" ]; then
+                    echo "- **Status:** ✅ Updated successfully" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "- **Status:** ℹ️ Already up to date" >> $GITHUB_STEP_SUMMARY
+                  fi
